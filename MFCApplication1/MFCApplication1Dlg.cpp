@@ -7,7 +7,7 @@
 #include "MFCApplication1.h"
 #include "MFCApplication1Dlg.h"
 #include "afxdialogex.h"
-
+#include<string>
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -145,7 +145,8 @@ bool CMFCApplication1Dlg::IsFolderEmpty(CString strPath)
 void CMFCApplication1Dlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_TREE1, m_tFileTree);
+	DDX_Control(pDX, IDC_TREE_FILE, m_tFileTree);
+	DDX_Control(pDX, IDC_LIST_FILE, m_lTreeFile);
 }
 
 BEGIN_MESSAGE_MAP(CMFCApplication1Dlg, CDialogEx)
@@ -221,7 +222,12 @@ BOOL CMFCApplication1Dlg::OnInitDialog()
 	);
 
 
-
+	//文本框设置
+	int nColIdx = 0;
+	m_lTreeFile.InsertColumn(nColIdx++, "名称", LVCFMT_CENTER, 200);
+	m_lTreeFile.InsertColumn(nColIdx++, "修改日期", LVCFMT_CENTER, 200);
+	m_lTreeFile.InsertColumn(nColIdx++, "类型", LVCFMT_CENTER, 200);
+	//m_lTreeFile.InsertColumn(nColIdx++, "大小");
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -319,7 +325,8 @@ void CMFCApplication1Dlg::OnDblclkTreeFile(NMHDR* pNMHDR, LRESULT* pResult)
 {
 	// TODO: 在此添加控件通知处理程序代码
 	*pResult = 0;
-
+	m_lTreeFile.DeleteAllItems();
+	int nNextRow = 0;
 	//1.获取路径
 	CString csPath = GetItemPath(m_tFileTree.GetSelectedItem());
 	//2.读取路径下的所有文件并显示在文本框
@@ -332,20 +339,28 @@ void CMFCApplication1Dlg::OnDblclkTreeFile(NMHDR* pNMHDR, LRESULT* pResult)
 		bWorking = finder.FindNextFile();
 		CString strFmt = finder.GetFileName();  //文件名
 		//文件类型判断
-		if (finder.IsSystem() &&  finder.IsDots()) {
+		if (finder.IsSystem() ||  finder.IsDots()) {
 			continue;
 		}
-		//文件夹，其他筛选下标
-		if (finder.IsDirectory()) {  //如果是文件夹
-			//AfxMessageBox("文件夹");
-		}
-		else {
-			int nTokenPos = 0;
-			CString a = strFmt.Tokenize(".", nTokenPos);
-			a = strFmt.Tokenize(".", nTokenPos) + "文件";
-			//AfxMessageBox(a);
-		}
+		nNextRow = m_lTreeFile.GetItemCount();// 下一行的索引
+		m_lTreeFile.InsertItem(nNextRow, strFmt); //文件名插入
 
+		//时间插入
+		FILETIME pTimeStamp = {};
+		finder.GetLastWriteTime(&pTimeStamp);
+		SYSTEMTIME lpSystemTime = {};
+		FileTimeToSystemTime(&pTimeStamp, &lpSystemTime);
+		std::string stime = std::to_string(lpSystemTime.wYear) + "-" + std::to_string(lpSystemTime.wMonth) + "-" + std::to_string(lpSystemTime.wDay)+ "  "+ std::to_string(lpSystemTime.wHour) + ":" + std::to_string(lpSystemTime.wMinute) + ":" + std::to_string(lpSystemTime.wSecond);
+		m_lTreeFile.SetItemText(nNextRow,1,stime.c_str()); //时间插入
+		
+														   
+		SHFILEINFO sTypeName = {};
+		SHGetFileInfo(csPath+ strFmt,0,&sTypeName,MAXBYTE, SHGFI_TYPENAME);
+		m_lTreeFile.SetItemText(nNextRow, 2, sTypeName.szTypeName);
+
+		//文件大小只能递归获取
+
+		//m_lTreeFile.SetItemText(nNextRow, 3, std::to_string(finder.GetLength()).c_str()); //文件大小
 	}
 	finder.Close();
 }

@@ -39,4 +39,5 @@ public:
 	CTreeFile m_tFileTree;  //文件树
 	afx_msg void OnItemexpandingTreeFile(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnDblclkTreeFile(NMHDR* pNMHDR, LRESULT* pResult);
+	CListCtrl m_lTreeFile;   //列表框
 };
