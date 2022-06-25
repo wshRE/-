@@ -119,6 +119,7 @@ void CMFCApplication1Dlg::PathFileReadANDShow(CString csPath, HTREEITEM hItem)
 			}
 		}
 	}
+	finder.Close();
 }
 
 bool CMFCApplication1Dlg::IsFolderEmpty(CString strPath)
@@ -323,5 +324,28 @@ void CMFCApplication1Dlg::OnDblclkTreeFile(NMHDR* pNMHDR, LRESULT* pResult)
 	CString csPath = GetItemPath(m_tFileTree.GetSelectedItem());
 	//2.读取路径下的所有文件并显示在文本框
 	//AfxMessageBox(csPath);
+	//3.循环输出所有的 名称 修改日期  类型  大小
+	CFileFind finder;
+	BOOL bWorking = finder.FindFile(csPath + '*');
+	while (bWorking)
+	{
+		bWorking = finder.FindNextFile();
+		CString strFmt = finder.GetFileName();  //文件名
+		//文件类型判断
+		if (finder.IsSystem() &&  finder.IsDots()) {
+			continue;
+		}
+		//文件夹，其他筛选下标
+		if (finder.IsDirectory()) {  //如果是文件夹
+			//AfxMessageBox("文件夹");
+		}
+		else {
+			int nTokenPos = 0;
+			CString a = strFmt.Tokenize(".", nTokenPos);
+			a = strFmt.Tokenize(".", nTokenPos) + "文件";
+			//AfxMessageBox(a);
+		}
 
+	}
+	finder.Close();
 }
