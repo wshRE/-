@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "CTreeFile.h"
 
 
 // CMFCApplication1Dlg 对话框
@@ -11,7 +12,10 @@ class CMFCApplication1Dlg : public CDialogEx
 // 构造
 public:
 	CMFCApplication1Dlg(CWnd* pParent = nullptr);	// 标准构造函数
-
+	void DelChild(HTREEITEM hmyItem);               //清空子节点
+	CString GetItemPath(HTREEITEM hItem);           //获取路径
+	void PathFileReadANDShow(CString csPath, HTREEITEM hItem); //获取路径下的文件并插入
+	bool IsFolderEmpty(CString strPath); //判断文件夹是否为空
 // 对话框数据
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_MFCAPPLICATION1_DIALOG };
@@ -31,4 +35,8 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	CTreeFile m_tFileTree;  //文件树
+	afx_msg void OnItemexpandingTreeFile(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnDblclkTreeFile(NMHDR* pNMHDR, LRESULT* pResult);
 };
